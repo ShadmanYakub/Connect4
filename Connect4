@@ -1,1 +1,426 @@
+import java.util.Scanner;
+
+/**
+ * @author: __SHADMAN YAKUB____your name here (SID)___21200130______
+ *
+ *          For the instruction of the assignment please refer to the assignment
+ *          GitHub.
+ *
+ *          Plagiarism is a serious offense and can be easily detected. Please
+ *          don't share your code to your classmate even if they are threatening
+ *          you with your friendship. If they don't have the ability to work on
+ *          something that can compile, they would not be able to change your
+ *          code to a state that we can't detect the act of plagiarism. For the
+ *          first commit of plagiarism, regardless you shared your code or
+ *          copied code from others, you will receive 0 with an addition of 5
+ *          mark penalty. If you commit plagiarism twice, your case will be
+ *          presented in the exam board and you will receive a F directly.
+ *
+ *          If you cannot work out the logic of the assignment, simply contact
+ *          us on Piazza. The teaching team is more the eager to provide
+ *          you help. We can extend your submission due if it is really
+ *          necessary. Just please, don't give up.
+ */
+public class Connect4 {
+
+    /**
+     * Total number of rows of the game board. Use this constant whenever possible.
+     */
+    public static final int HEIGHT = 6;
+    /**
+     * Total number of columns of the game board. Use this constant whenever
+     * possible.
+     */
+    public static final int WIDTH = 8;
+
+    /**
+     * Your main program. You don't need to change this part. This has been done for
+     * you.
+     */
+    public static void main(String[] args) {
+        new Connect4().runOnce();
+    }
+
+    /**
+     * Your program entry. There are two lines missing. Please complete the line
+     * labeled with TODO. You can, however, write more than two lines to complete
+     * the logic required by TODO. You are not supposed to modify any part other
+     * than the TODOs.
+     */
+    void runOnce() {
+        // For people who are not familiar with constants - HEIGHT and WIDTH are two
+        // constants defined above. These two constants are visible in the entire
+        // program. They cannot be further modified, i.e., it is impossible to write
+        // HEIGHT = HEIGHT + 1; or WIDTH = 0; anywhere in your code. However, you can
+        // use
+        // these two constants as a reference, i.e., row = HEIGHT - 1, for example.
+
+        int[][] board = new int[HEIGHT][WIDTH];
+        char[] symbols = { '1', '2' };
+        int player = 1;
+        printBoard(board, symbols);
+
+        Scanner scanner = new Scanner(System.in);
+        boolean quit = false;
+        while (!isGameOver(board) && !quit) {
+            System.out.println("Player " + player + ", please enter a command. Press 'h' for help");
+            char s = scanner.next().charAt(0);
+            switch (s) {
+                case 'h':
+                case 'H':
+                    printHelpMenu();
+                    break;
+                case 'c':
+                case 'C':
+                    changeSymbol(player, symbols);
+                    break;
+                case 'q':
+                case 'Q':
+                    quit = true;
+                    System.out.println("Bye~");
+                    continue;
+                case 'r':
+                    restart(board);
+                    printBoard(board, symbols);
+                    continue;
+                default:
+                    if (!validate(s, board)) {
+                        System.out.println("Wrong input!, please do again");
+                        continue;
+                    }
+
+                    // convert the char 's' to the integer 'column', with the value 0 to 7
+                    int column = s - 48;// TODO did -48 to convert character to integer using ASCII TABLE
+
+                    fillBoard(board, column, player);
+                    printBoard(board, symbols);//updates the board
+                    if (isGameOver(board)) {
+                        System.out.println("Player " + player + ", you win!");
+                        break;
+                    } else if (checkMate(player, board))
+                        System.out.println("Check mate!");
+                    else if (check(player, board))
+                        System.out.println("Check!");
+
+                    // TODO: after each iteration, change the variable "player" alternatively
+                    // between the integers 1 and 2.
+                    if (player == 1) // code to alternate between player 1 and 2
+                        player++;
+                    else{
+                        player--;
+                    }
+
+
+            } // end switch
+        } // end while
+    }
+
+    /**
+     * Reset the board to the initial state
+     *
+     * @param board - the game board array
+     */
+    void restart(int[][] board) {
+        //TODO
+        // reset the value of int board array to zero which will then print spaces.
+        for(int row = 0; row < board.length; row++){
+            for(int col = 0; col < board[0].length; col++){
+                board[row][col] = 0;
+            }
+        }
+
+    }
+
+
+
+    /**
+     * It allows a player to choose a new symbol to represents its chess.
+     * This method should ask the player to enter a new symbol so that symbol is not
+     * the same as its opponent.
+     * Otherwise the player will need to enter it again until they are different.
+     *
+     * @param player  - the player who is about to change its symbol
+     * @param symbols - the symbols array storing the players' symbols.
+     */
+    void changeSymbol(int player, char[] symbols) {
+        //TODO
+        Scanner scanner = new Scanner(System.in);
+        while(symbols[0] != symbols[1]) { // given that the symbol of player 1 and player 2 is not equal
+            System.out.print("Enter a new symbol: ");
+            char a = scanner.next().charAt(0);
+            if (player == 1) {
+                symbols[0] = a; // sets the new symbol for player 1
+            }
+            if (player == 2) {
+                symbols[1] = a; // sets the new symbol for player 2
+            }
+            break;
+        }
+
+    }
+
+    /**
+     * This method returns true if the player "player" plays immediately, he/she may
+     * end the game. This warns the other player to
+     * place his/her next block in a correct position.
+     *
+     *
+     * @param player - the player who is about to win if the other player does not
+     *               stop him
+     * @param board  - the 2D array of the game board.
+     * @return true if the player is about to win, false if the player is not.
+     */
+    boolean check(int player, int[][] board) {
+        // TODO
+        //  the following code puts in a token in every column and if...
+        // ... isGameOver become true then it's a check  so it returns true
+        for ( int col = 0; col < board[0].length; col++) { // goes through every column from left to the end of the board
+            for (int row = board.length - 1; row >= 0; row--) { // goes from the bottom row to the top of the board
+                if (board[row][col] == 0) { // if there is an empty space...
+                    board[row][col] = player; // ...puts the token
+                    if (isGameOver(board)) {
+                        board[row][col] = 0;// resets the value back to zero
+                        return true;
+                    }
+                    else {
+                        board[row][col] = 0;// resets the  value back to zero even if isGameOver is false.
+                    }
+                    break;
+                }
+
+
+            }
+        }
+        return false;
+    }
+
+
+
+
+    /**
+     * This method is very similar to the method check. However, a check-mate move
+     * means no matter how the other player place his/her next block, in the next
+     * turn the player can win the game with certain move.
+     *
+     * A check-mate move must be a check move. Not all check moves are check-mate
+     * move.
+     *
+     * @param player - the player who is about to win no matter what the other
+     *               player does
+     * @param board  - the 2D array of the game board/
+     * @return true if the player is about to win
+     */
+    boolean checkMate(int player, int[][] board) {
+        // TODO
+        // the same code as check just that
+        // introduced a count integer to count the number of checks
+        // if count is greater than equal to 2 then checkmate
+        int cnt = 0;
+        if(!check(1,board) || !check(2,board)){
+            // Suppose if player 1 gives a checkmate to player 2 but player 2 can win in the next move...
+            //... it won't be a checkmate to player 2 because player 2 can win the game...
+            // in the next move and vice versa.
+
+            for ( int col = 0; col < board[0].length; col++) {
+                for (int row = board.length - 1; row >= 0; row--) {
+                    if (board[row][col] == 0) {
+                        board[row][col] = player;
+                        if (isGameOver(board)) {// instead of returning true the variable 'cnt' counts the checks
+                            cnt++;
+                            board[row][col] = 0;
+                        } else {
+                            board[row][col] = 0;
+                        }
+                        break;
+                    }
+
+
+                }
+            }
+        }
+
+
+
+
+        if (cnt >= 2) {
+            return true;
+        }
+
+
+
+        return false;
+
+    }
+
+
+    /**
+     * Validate if the input is valid. This input should be one of the character
+     * '0', '1', '2', '3,' ..., '7'.
+     * The column corresponding to that input should not be full.
+     *
+     * @param input - the character of the column that the block is intended to
+     *              place
+     * @param board - the game board
+     * @return - true if it is valid, false if it is invalid (e.g., '8', 'c', '@',
+     *         EOT (which has an unicode 4) )
+     */
+    boolean validate(char input, int[][] board) {
+        //TODO
+        // if a column is already full and user inputs another token in that column, validate returns false
+        //if a user inputs a token outside of column(0-7), validate returns false
+        if ((input - 48) < WIDTH && (input - 48) >= 0 && board[0][input - 48] == 0) {
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * Given the column (in integer) that a player wish to place his/her block,
+     * update the gameboard. You may assume that the input has been validated before
+     * calling this method, i.e., there always has room to place the block when
+     * calling this method.
+     *
+     * @param board  - the game board
+     * @param column - the column that the player want to places its block
+     * @param player - 1 or 2, the player.
+     */
+    void fillBoard(int[][] board, int column, int player) {
+        // TODO
+        for (int row = board.length - 1; row >= 0; row--) {
+            if (board[row][column] == 0) {
+                board[row][column] = player;// prints character in the  empty spaces of user input
+                break;
+            }
+        }
+
+
+
+
+
+    }
+
+    /**
+     * Print the Help Menu. Please try to understand the switch case in runOnce and
+     * Provide a one line comment about the purpose of each symbol.
+     */
+    void printHelpMenu() {
+        // TODO
+        System.out.println("Help Menu:");
+        for(int i = 0; i < 19; i++)
+            System.out.print("-");
+        System.out.println();
+        System.out.println(" ");
+        System.out.println("press symbol h for the help menu");
+        System.out.println("press symbol c to change symbol");
+        System.out.println("press symbol q to quit");
+        System.out.println("press symbol r to restart");
+        System.out.println("press (0-7) to put the token in the desired column");
+
+    }
+
+    /**
+     * Determine if the game is over. Game is over if and only if one of the player
+     * has a connect-4 or the entire gameboard is fully filled.
+     *
+     * @param board - the game board
+     * @return - true if the game is over, false other wise.
+     */
+    boolean isGameOver(int[][] board) {
+        // TODO
+        char[] symbols = {'1', '2'};
+
+        for(int row = 0; row < board.length; row++){// code where player 2 wins by default if...
+            //... the board is completely filled
+            for(int col = 0; col < board[row].length; col++){
+                if(board[0][0] !=0 && board[0][1] !=0 && board[0][2] !=0
+                        && board[0][3] !=0 && board[0][4] !=0 && board[0][5] !=0
+                        && board[0][6] !=0 && board[0][7] !=0)
+                    return true;
+            }
+        }
+
+
+        // checks for 4 same tokens horizontally
+        for (int i = 0; i < 2; i++) {
+            for (int row = 0; row < board.length; row++) {
+                for (int col = 0; col < board[0].length - 3; col++) {
+                    if (board[row][col] == symbols[i] - 48 &&
+                            board[row][col + 1] == symbols[i] - 48 &&
+                            board[row][col + 2] == symbols[i] - 48 &&
+                            board[row][col + 3] == symbols[i] - 48) {
+                        return true;
+                    }
+                }
+            }
+            // checks for 4 same tokens vertically
+            for (int row = 0; row < board.length - 3; row++) {
+                for (int col = 0; col < board[0].length; col++) {
+                    if (board[row][col] == symbols[i] - 48 &&
+                            board[row + 1][col] == symbols[i] - 48 &&
+                            board[row + 2][col] == symbols[i] - 48 &&
+                            board[row + 3][col] == symbols[i] - 48) {
+                        return true;
+                    }
+                }
+            }
+            //right-upwards diagonal
+            for (int row = 3; row < board.length; row++) {
+                for (int col = 0; col < board[0].length - 3; col++) {
+                    if (board[row][col] == symbols[i] - 48 &&
+                            board[row - 1][col + 1] == symbols[i] - 48 &&
+                            board[row - 2][col + 2] == symbols[i] - 48 &&
+                            board[row - 3][col + 3] == symbols[i] - 48) {
+                        return true;
+                    }
+                }
+            }
+            // left upward diagonal
+            for (int row = 0; row < board.length - 3; row++) {
+                for (int col = 0; col < board[0].length - 3; col++) {
+                    if (board[row][col] == symbols[i] - 48 &&
+                            board[row + 1][col + 1] == symbols[i] - 48 &&
+                            board[row + 2][col + 2] == symbols[i] - 48 &&
+                            board[row + 3][col + 3] == symbols[i] - 48) {
+                        return true;
+                    }
+                }
+            }
+
+        }
+        return false;
+    }
+
+
+
+    /**
+     * Print the game board in a particular format. The instruction can be referred
+     * to the GitHub or the demo program. By default, Player 1 uses the character
+     * '1' to represent its block. Player 2 uses the character '2'. They can be
+     * overrided by the value of symbols array. This method does not change the
+     * value of the gameboard nor the symbols array.
+     *
+     * @param board   - the game board to be printed.
+     * @param symbols - the symbols that represents player 1 and player 2.
+     */
+    void printBoard(int[][] board, char[] symbols) {
+        // TODO
+        System.out.println(" 01234567");
+        System.out.println(" --------");
+        for (int row = 0; row < HEIGHT; row++) {
+            System.out.print("|");
+            for (int col = 0; col < WIDTH; col++) {
+                if (board[row][col] == 0)
+                    System.out.print(" ");
+                if (board[row][col] == 1)  // if board[row][col] is equal to value of  player 1, prints char of player1
+                    System.out.print(symbols[0]);
+                if (board[row][col] == 2)  // if board[row][col] is equal to value of player 2, prints char of player2
+                    System.out.print(symbols[1]);
+            }
+            System.out.print("|");
+            System.out.println();
+        }
+        System.out.println(" --------");
+    }
+}
 
